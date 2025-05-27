@@ -1,0 +1,17 @@
+# Compiled files
+*.rs.bk
+*.rlib
+*.so
+*.rlib
+*.a
+*.dylib
+*.dll
+*.exe
+
+# Executables
+/target/
+
+Cargo.lock
+target/
+
+kernel8.img

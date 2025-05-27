@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        feature: [pi3, pi4, pi5]
+        example: [blink, uart_echo]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-none
+      - name: Build library
+        run: cargo build --release --features ${{matrix.feature}}
+      - name: Build example
+        run: cargo build --release --example ${{matrix.example}} --features ${{matrix.feature}}

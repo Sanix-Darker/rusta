@@ -52,11 +52,11 @@ jobs:
           mkdir -p release-artifacts
           cp target/aarch64-unknown-none/release/librusta.d release-artifacts/librusta-${{ matrix.feature }}-${{ matrix.artifact_suffix }}.a
 
-      - name: Generate Documentation
-        run: |
-          cargo doc --no-deps --features ${{ matrix.feature }} --target aarch64-unknown-none
-          mkdir -p docs/${{ matrix.feature }}
-          cp -r target/doc docs/${{ matrix.feature }}
+      # - name: Generate Documentation
+      #   run: |
+      #     cargo doc --no-deps --features ${{ matrix.feature }} --target aarch64-unknown-none
+      #     mkdir -p docs/${{ matrix.feature }}
+      #     cp -r target/doc docs/${{ matrix.feature }}
 
       - name: Run Verification
         run: |

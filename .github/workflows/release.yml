@@ -65,7 +65,7 @@ jobs:
           cargo clippy --features ${{ matrix.feature }} --target aarch64-unknown-none
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: rusta-${{ matrix.feature }}-${{ matrix.artifact_suffix }}
           path: |

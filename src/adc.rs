@@ -1,5 +1,5 @@
 // analog to digital converter
-use crate::{board::ADC_BASE, delay, volatile::Volatile};
+use crate::{board::pi4::ADC_BASE, delay, volatile::Volatile};
 
 #[repr(C)]
 struct Reg {

@@ -11,5 +11,9 @@ pub mod mmio;
 pub mod pwm;
 pub mod serial;
 pub mod spi;
+pub mod adc;
 pub mod uart;
 pub mod volatile;
+pub mod pin;        // Arduino-style Digital/Analog helpers
+pub mod watchdog;   // PM-block watchdog API
+pub mod arduino;    // digitalWrite / digitalRead macro façade

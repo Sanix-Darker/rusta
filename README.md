@@ -77,6 +77,32 @@ fn _start() -> ! {
 }
 ```
 
+Or using the most common arduino like syntax (with the wrapper integrated):
+
+```rust
+#![no_std]
+#![no_main]
+extern crate panic_halt as _;
+
+use rusta::arduino::*;
+use rusta::delay;
+
+const LED: usize = 21;
+
+#[no_mangle]
+fn _start() -> ! {
+    pin_mode!(LED, OUTPUT);
+
+    loop {
+        digital_write!(LED, HIGH);
+        delay::ms(500);
+
+        digital_write!(LED, LOW);
+        delay::ms(500);
+    }
+}
+```
+
 Then build and generate the image with :
 
 ```bash

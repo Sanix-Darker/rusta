@@ -3,7 +3,7 @@ name: Release Library
 on:
   push:
     tags:
-      - 'v*' # Trigger on tags like v0.0.1
+      - 'v*'
 
 permissions:
   contents: write
@@ -13,48 +13,100 @@ env:
   VERSION: ${{ github.ref_name }}
 
 jobs:
-  build-and-release:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
         feature: [pi3, pi4, pi5]
-        target: [aarch64-unknown-none]
+        include:
+          - os: ubuntu-latest
+            rust_target: aarch64-unknown-linux-gnu
+            artifact_suffix: linux
+          - os: windows-latest
+            rust_target: aarch64-pc-windows-msvc
+            artifact_suffix: windows
+          - os: macos-latest
+            rust_target: aarch64-apple-darwin
+            artifact_suffix: macos
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
-          components: rust-src
+          targets: ${{ matrix.rust_target }},aarch64-unknown-none
+          components: rust-src, rustfmt, clippy
 
       - name: Build Library
         run: |
-          cargo build --release --features ${{ matrix.feature }} --target ${{ matrix.target }}
+          # Build for bare-metal target
+          cargo build --release --features ${{ matrix.feature }} --target aarch64-unknown-none
 
-          # Package the library artifacts
+          # Build for host target (verification)
+          cargo build --features ${{ matrix.feature }} --target ${{ matrix.rust_target }}
+
+          # Package the bare-metal static library
           mkdir -p release-artifacts
-          cp target/${{ matrix.target }}/release/librusta.d release-artifacts/rusta-${{ matrix.feature }}.a
-          cp Cargo.toml release-artifacts/
-          cp -r src release-artifacts/
+          cp target/aarch64-unknown-none/release/librusta.a release-artifacts/librusta-${{ matrix.feature }}-${{ matrix.artifact_suffix }}.a
 
-          # Create a version file
-          echo ${{ env.VERSION }} > release-artifacts/VERSION
-
-      - name: Create Library Archive
+      - name: Generate Documentation
         run: |
-          cd release-artifacts
-          tar czvf rusta-${{ matrix.feature }}-${{ env.VERSION }}.tar.gz *
-          echo "ASSET_FILE=rusta-${{ matrix.feature }}-${{ env.VERSION }}.tar.gz" >> $GITHUB_ENV
+          cargo doc --no-deps --features ${{ matrix.feature }} --target aarch64-unknown-none
+          mkdir -p docs/${{ matrix.feature }}
+          cp -r target/doc docs/${{ matrix.feature }}
 
-      - name: Upload Release Assets
+      - name: Run Verification
+        run: |
+          cargo check --features ${{ matrix.feature }} --target x86_64-unknown-linux-gnu
+          cargo check --features ${{ matrix.feature }} --target x86_64-pc-windows-gnu
+          cargo clippy --features ${{ matrix.feature }} --target aarch64-unknown-none
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: rusta-${{ matrix.feature }}-${{ matrix.artifact_suffix }}
+          path: |
+            release-artifacts/librusta-${{ matrix.feature }}-${{ matrix.artifact_suffix }}.a
+            docs/${{ matrix.feature }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: Create Release Packages
+        run: |
+          mkdir -p dist
+          # Create platform-specific packages
+          for feature in pi3 pi4 pi5; do
+            for platform in linux windows macos; do
+              mkdir -p "dist/$feature-$platform"
+              cp "artifacts/rusta-$feature-$platform/librusta-$feature-$platform.a" "dist/$feature-$platform/"
+              cp -r "artifacts/rusta-$feature-$platform/docs" "dist/$feature-$platform/"
+              tar czvf "dist/rusta-$feature-$platform-${{ env.VERSION }}.tar.gz" -C "dist/$feature-$platform" .
+            done
+          done
+
+      - name: Create Combined Docs
+        run: |
+          mkdir -p dist/docs
+          cp -r artifacts/rusta-pi3-linux/docs/* dist/docs/
+          for feature in pi4 pi5; do
+            cp -r "artifacts/rusta-$feature-linux/docs/$feature" dist/docs/
+          done
+          tar czvf dist/rusta-docs-${{ env.VERSION }}.tar.gz -C dist/docs .
+
+      - name: Publish Release
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            release-artifacts/${{ env.ASSET_FILE }}
+            dist/*.tar.gz
           generate_release_notes: true

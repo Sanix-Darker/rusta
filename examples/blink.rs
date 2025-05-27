@@ -12,6 +12,7 @@ fn _start() -> ! {
     loop {
         GPIO::write(LED, true);
         delay::cycles(50_000);
+
         GPIO::write(LED, false);
         delay::cycles(50_000);
     }

@@ -1,19 +1,33 @@
 [package]
-name = "rusta"
-version = "0.1.0"
+name    = "rusta"
+version = "0.0.8"
 edition = "2021"
 
+# To Build a static archive:   target/<triple>/release/librusta.a
+[lib]
+name        = "rusta"
+crate-type  = ["rlib", "staticlib"]
+
+# Feature flags — enable one of pi3 | pi4 | pi5 at build-time
+# (default is pi3 so `cargo build --release` just works)
 [features]
 default = ["pi3"]
+
 pi3 = []
 pi4 = []
 pi5 = []
 
+# Runtime-free, bare-metal friendly dependencies
 [dependencies]
-# Provides a tiny panic handler used by the bare‑metal examples
-panic-halt = "0.2"
-bare-metal = "1.0"
-cortex-a = { version = "7.0", optional = true }  # For more advanced ARM features
+# Tiny panic handler for `#![no_std]` targets
+panic-halt = "1.0"
+# Helpers for critical sections & register manipulation
+bare-metal  = "1.0"
+# Advanced ARM/AArch64 register helpers (optional)
+cortex-a    = { version = "8.1.1", optional = true }
 
+# Optimise for embedded release builds
 [profile.release]
 panic = "abort"
+lto   = "fat"
+codegen-units = 1

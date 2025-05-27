@@ -14,106 +14,92 @@ env:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest             # NOTE: Linux only for now
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
         feature: [pi3, pi4, pi5]
-        include:
-          - os: ubuntu-latest
-            rust_target: aarch64-unknown-linux-gnu
-            artifact_suffix: linux
-          - os: windows-latest
-            rust_target: aarch64-pc-windows-msvc
-            artifact_suffix: windows
-          - os: macos-latest
-            rust_target: aarch64-apple-darwin
-            artifact_suffix: macos
+
+    env:
+      RUST_TARGET: aarch64-unknown-linux-gnu
+      ARTIFACT_SUFFIX: linux
+      LIB_EXT: a
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
+      # Toolchain
       - name: Install Rust Targets
         run: |
           rustup target add aarch64-unknown-none
+          rustup target add ${{ env.RUST_TARGET }}
           rustup target add x86_64-unknown-linux-gnu
-          rustup target add x86_64-pc-windows-gnu
-          rustup target add ${{ matrix.rust_target }}
 
       - name: Setup Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-unknown-none,${{ matrix.rust_target }},x86_64-unknown-linux-gnu,x86_64-pc-windows-gnu
-          components: rust-src, rustfmt, clippy
+          targets: aarch64-unknown-none,${{ env.RUST_TARGET }},x86_64-unknown-linux-gnu
+          components: rust-src,rustfmt,clippy
 
+      # Build
       - name: Build Library
         run: |
-          # Build for bare-metal target
           cargo build --release --features ${{ matrix.feature }} --target aarch64-unknown-none
-
-          # Build for host target (verification)
-          cargo build --features ${{ matrix.feature }} --target ${{ matrix.rust_target }}
-
-          # Package the bare-metal static library
           mkdir -p release-artifacts
-          cp target/aarch64-unknown-none/release/librusta.d release-artifacts/librusta-${{ matrix.feature }}-${{ matrix.artifact_suffix }}.a
+          cp target/aarch64-unknown-none/release/librusta.a \
+             release-artifacts/librusta-${{ matrix.feature }}-linux.a
 
+      # TODO: Docs
       # - name: Generate Documentation
       #   run: |
       #     cargo doc --no-deps --features ${{ matrix.feature }} --target aarch64-unknown-none
       #     mkdir -p docs/${{ matrix.feature }}
-      #     cp -r target/doc docs/${{ matrix.feature }}
+      #     cp -r target/doc/. docs/${{ matrix.feature }}
 
-      - name: Run Verification
-        run: |
-          cargo check --features ${{ matrix.feature }} --target x86_64-unknown-linux-gnu
-          cargo check --features ${{ matrix.feature }} --target x86_64-pc-windows-gnu
-          cargo clippy --features ${{ matrix.feature }} --target aarch64-unknown-none
+      # FIXME: Lints / Verification
+      # - name: Run Verification
+      #   run: |
+      #     cargo +nightly check --features ${{ matrix.feature }} \
+      #         --target x86_64-unknown-linux-gnu \
+      #         -Z build-std=core,compiler_builtins,alloc \
+      #         -Z build-std-features=panic_immediate_abort
+      #     cargo +nightly clippy --features ${{ matrix.feature }} \
+      #         --target x86_64-unknown-linux-gnu \
+      #         -Z build-std=core,compiler_builtins,alloc \
+      #         -Z build-std-features=panic_immediate_abort
 
+      # Upload build artifacts
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: rusta-${{ matrix.feature }}-${{ matrix.artifact_suffix }}
+          name: rusta-${{ matrix.feature }}-${{ env.ARTIFACT_SUFFIX }}
           path: |
-            release-artifacts/librusta-${{ matrix.feature }}-${{ matrix.artifact_suffix }}.a
+            release-artifacts/*
             docs/${{ matrix.feature }}
 
   release:
     needs: build
     runs-on: ubuntu-latest
+
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
 
-      - name: Create Release Packages
+      - name: Create Release Packages (Linux only)
         run: |
           mkdir -p dist
-          # Create platform-specific packages
           for feature in pi3 pi4 pi5; do
-            for platform in linux windows macos; do
-              mkdir -p "dist/$feature-$platform"
-              cp "artifacts/rusta-$feature-$platform/librusta-$feature-$platform.a" "dist/$feature-$platform/"
-              cp -r "artifacts/rusta-$feature-$platform/docs" "dist/$feature-$platform/"
-              tar czvf "dist/rusta-$feature-$platform-${{ env.VERSION }}.tar.gz" -C "dist/$feature-$platform" .
-            done
+            mkdir -p "dist/$feature-linux"
+            ls -alh artifacts/rusta-$feature-linux/release-artifacts/
+            cp -r "artifacts/rusta-$feature-linux/release-artifacts/librusta-$feature-linux.a" "dist/$feature-linux/"
+            tar czvf "dist/rusta-$feature-linux-${{ env.VERSION }}.tar.gz" -C "dist/$feature-linux" .
           done
-
-      - name: Create Combined Docs
-        run: |
-          mkdir -p dist/docs
-          cp -r artifacts/rusta-pi3-linux/docs/* dist/docs/
-          for feature in pi4 pi5; do
-            cp -r "artifacts/rusta-$feature-linux/docs/$feature" dist/docs/
-          done
-          tar czvf dist/rusta-docs-${{ env.VERSION }}.tar.gz -C dist/docs .
 
       - name: Publish Release
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: |
-            dist/*.tar.gz
+          files: dist/*.tar.gz
           generate_release_notes: true

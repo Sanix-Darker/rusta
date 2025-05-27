@@ -50,7 +50,7 @@ jobs:
 
           # Package the bare-metal static library
           mkdir -p release-artifacts
-          cp target/aarch64-unknown-none/release/librusta.a release-artifacts/librusta-${{ matrix.feature }}-${{ matrix.artifact_suffix }}.a
+          cp target/aarch64-unknown-none/release/librusta.d release-artifacts/librusta-${{ matrix.feature }}-${{ matrix.artifact_suffix }}.a
 
       - name: Generate Documentation
         run: |

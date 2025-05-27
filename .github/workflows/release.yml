@@ -1,0 +1,60 @@
+name: Release Library
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on tags like v0.0.1
+
+permissions:
+  contents: write
+  packages: read
+
+env:
+  VERSION: ${{ github.ref_name }}
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        feature: [pi3, pi4, pi5]
+        target: [aarch64-unknown-none]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+          components: rust-src
+
+      - name: Build Library
+        run: |
+          cargo build --release --features ${{ matrix.feature }} --target ${{ matrix.target }}
+
+          # Package the library artifacts
+          mkdir -p release-artifacts
+          cp target/${{ matrix.target }}/release/librusta.a release-artifacts/rusta-${{ matrix.feature }}.a
+          cp Cargo.toml release-artifacts/
+          cp -r src release-artifacts/
+
+          # Create a version file
+          echo ${{ env.VERSION }} > release-artifacts/VERSION
+
+      - name: Create Library Archive
+        run: |
+          cd release-artifacts
+          tar czvf rusta-${{ matrix.feature }}-${{ env.VERSION }}.tar.gz *
+          echo "ASSET_FILE=rusta-${{ matrix.feature }}-${{ env.VERSION }}.tar.gz" >> $GITHUB_ENV
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            release-artifacts/${{ env.ASSET_FILE }}
+          generate_release_notes: true

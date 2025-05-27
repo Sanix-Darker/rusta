@@ -1,6 +1,6 @@
 # RUSTA
 
-**Unsafe** Rust runtime that boots bare-metal on Raspberry Pi 3 / 4 / 5—think *Arduino-style* simplicity, on a 64-bit quad-core.
+**Unsafe** Rust runtime that boots bare-metal on Raspberry Pi 3 / 4 / 5...think *Arduino-style* simplicity, on a 64-bit quad-core.
 
 [![Built with Rust](https://img.shields.io/badge/Built%20with-Rust-orange)](https://www.rust-lang.org)
 [![License MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)

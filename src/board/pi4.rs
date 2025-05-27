@@ -4,3 +4,5 @@ pub const UART0_BASE: usize = PERIPHERAL_BASE + 0x21_5000;
 pub const PWM_BASE: usize = PERIPHERAL_BASE + 0x20_C000;
 pub const SPI0_BASE: usize = PERIPHERAL_BASE + 0x20_4000;
 pub const I2C1_BASE: usize = PERIPHERAL_BASE + 0x20_5000;
+pub const ADC_BASE: usize = PERIPHERAL_BASE + 0x21_0000;
+pub const TIMER_BASE: usize = PERIPHERAL_BASE + 0x00_B400;

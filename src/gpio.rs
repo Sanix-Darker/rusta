@@ -1,4 +1,4 @@
-use crate::{board::GPIO_BASE, volatile::Volatile};
+use crate::{board::GPIO_BASE, delay, volatile::Volatile};
 
 #[repr(u32)]
 pub enum Mode {
@@ -70,5 +70,71 @@ impl GPIO {
         let reg = p / 32;
         let s = p % 32;
         (Self::r().gplev[reg].read() & (1 << s)) != 0
+    }
+
+    pub fn set_pull(p: usize, pull: Pull) {
+        let r = Self::r();
+        r.gppud.write(pull as u32);
+        delay::cycles(150);
+
+        r.gppudclk[p / 32].write(1 << (p % 32));
+        delay::cycles(150);
+
+        r.gppud.write(0);
+        r.gppudclk[p / 32].write(0);
+    }
+}
+
+#[repr(u32)]
+pub enum Pull {
+    Off = 0,
+    Down = 1,
+    Up = 2,
+}
+
+// Pack multiple pins into a single u32 for atomic ops
+pub struct PinBank {
+    pins: u32,
+    mask: u32,
+}
+
+impl PinBank {
+    pub const fn new(pins: &[usize]) -> Self {
+        let mut mask = 0;
+        // The 'for' loop is not allowed in const functions.
+        // Replaced with a 'while' loop using manual indexing.
+        let mut i = 0;
+        while i < pins.len() {
+            // Calculate the bitmask for the current pin.
+            mask |= 1 << pins[i];
+            i += 1;
+        }
+        Self { pins: 0, mask }
+    }
+
+    // Atomic write for all pins in bank
+    pub fn write(&mut self, values: u32) {
+        // Get a mutable reference to the GPIO registers.
+        let r = GPIO::r();
+
+        // Apply the pin bank's mask to the input values to ensure only
+        // relevant bits are considered for setting/clearing.
+        let bits = values & self.mask;
+
+        // Write to the GPSET register to set the bits that are high in 'bits'.
+        // The GPSET register only sets bits; it doesn't clear others.
+        // This is safe for atomic operations as it only affects the desired pins.
+        r.gpset[0].write(bits);
+
+        // Write to the GPCLR register to clear the bits that are low in 'bits'
+        // but are part of this pin bank's mask.
+        // `!bits & self.mask` ensures that:
+        // 1. Only bits that should be low (`!bits`) are targeted.
+        // 2. Only pins managed by this `PinBank` (`self.mask`) are affected.
+        // This ensures that pins that should remain high are not accidentally cleared.
+        r.gpclr[0].write(!bits & self.mask);
+
+        // Update the internal state of the PinBank to reflect the new pin values.
+        self.pins = bits;
     }
 }

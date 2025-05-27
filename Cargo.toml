@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
+default = ["pi3"]
 pi3 = []
 pi4 = []
 pi5 = []
@@ -11,6 +12,8 @@ pi5 = []
 [dependencies]
 # Provides a tiny panic handler used by the bare‑metal examples
 panic-halt = "0.2"
+bare-metal = "1.0"
+cortex-a = { version = "7.0", optional = true }  # For more advanced ARM features
 
 [profile.release]
 panic = "abort"

@@ -2,7 +2,7 @@
 #![no_std]
 #![no_main]
 extern crate panic_halt;
-use rusta::{println, sdcard, delay};
+use rusta::{delay, println, sdcard};
 
 #[no_mangle]
 fn _start() -> ! {

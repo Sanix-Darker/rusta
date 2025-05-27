@@ -2,7 +2,7 @@
 #![no_std]
 #![no_main]
 extern crate panic_halt;
-use rusta::{i2c::I2C, graphics::OLED, delay};
+use rusta::{delay, graphics::OLED, i2c::I2C};
 
 #[no_mangle]
 fn _start() -> ! {

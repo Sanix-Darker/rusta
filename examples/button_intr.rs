@@ -1,7 +1,10 @@
 #![no_std]
 #![no_main]
 extern crate panic_halt;
-use rusta::{gpio::{Mode, GPIO, Edge}, println};
+use rusta::{
+    gpio::{Edge, Mode, GPIO},
+    println,
+};
 
 static mut COUNTER: u32 = 0;
 

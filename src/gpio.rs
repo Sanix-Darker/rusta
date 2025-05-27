@@ -1,4 +1,4 @@
-use crate::{board::GPIO_BASE, volatile::Volatile, delay};
+use crate::{board::GPIO_BASE, delay, volatile::Volatile};
 
 #[repr(u32)]
 pub enum Mode {
@@ -38,17 +38,17 @@ struct Regs {
     _reserved3: Volatile<u32>,
     gpeds: [Volatile<u32>; 2],
     _reserved4: Volatile<u32>,
-    gpren: [Volatile<u32>; 2],   // Rising edge detect enable
+    gpren: [Volatile<u32>; 2], // Rising edge detect enable
     _reserved5: Volatile<u32>,
-    gpfen: [Volatile<u32>; 2],   // Falling edge detect enable
+    gpfen: [Volatile<u32>; 2], // Falling edge detect enable
     _reserved6: Volatile<u32>,
-    gphen: [Volatile<u32>; 2],   // High level detect enable
+    gphen: [Volatile<u32>; 2], // High level detect enable
     _reserved7: Volatile<u32>,
-    gplen: [Volatile<u32>; 2],   // Low level detect enable
+    gplen: [Volatile<u32>; 2], // Low level detect enable
     _reserved8: Volatile<u32>,
-    gparen: [Volatile<u32>; 2],  // Async rising edge detect
+    gparen: [Volatile<u32>; 2], // Async rising edge detect
     _reserved9: Volatile<u32>,
-    gpafen: [Volatile<u32>; 2],  // Async falling edge detect
+    gpafen: [Volatile<u32>; 2], // Async falling edge detect
     _reserved10: Volatile<u32>,
     gppud: Volatile<u32>,
     gppudclk: [Volatile<u32>; 2],
@@ -105,15 +105,15 @@ impl GPIO {
             Edge::Rising => {
                 r.gpren[bank].write(1 << bit);
                 r.gpfen[bank].write(0);
-            },
+            }
             Edge::Falling => {
                 r.gpfen[bank].write(1 << bit);
                 r.gpren[bank].write(0);
-            },
+            }
             Edge::Both => {
                 r.gpren[bank].write(1 << bit);
                 r.gpfen[bank].write(1 << bit);
-            },
+            }
         }
     }
 
@@ -144,7 +144,6 @@ impl GPIO {
         (Self::r().gpeds[bank].read() & (1 << bit)) != 0
     }
 }
-
 
 // Pack multiple pins into a single u32 for atomic ops
 pub struct PinBank {

@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 extern crate panic_halt;
-use rusta::{cpu, println, delay};
+use rusta::{cpu, delay, println};
 
 static SHARED_COUNTER: spin::Mutex<u32> = spin::Mutex::new(0);
 

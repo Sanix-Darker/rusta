@@ -2,7 +2,7 @@
 #![no_std]
 #![no_main]
 extern crate panic_halt;
-use rusta::{power::SleepMode, rtc::RTC, gpio::GPIO};
+use rusta::{gpio::GPIO, power::SleepMode, rtc::RTC};
 
 #[no_mangle]
 fn _start() -> ! {

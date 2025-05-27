@@ -2,7 +2,11 @@
 #![no_std]
 #![no_main]
 extern crate panic_halt;
-use rusta::{delay, gpio::{Mode, GPIO, Pull}, println};
+use rusta::{
+    delay,
+    gpio::{Mode, Pull, GPIO},
+    println,
+};
 
 #[no_mangle]
 fn _start() -> ! {
@@ -30,7 +34,7 @@ fn read_dht(pin: usize) -> Result<(i8, u8), &'static str> {
     // Switch to input and wait for response
     GPIO::set_mode(pin, Mode::Input);
     wait_pin(pin, false)?; // Wait for low
-    wait_pin(pin, true)?;  // Wait for high
+    wait_pin(pin, true)?; // Wait for high
     wait_pin(pin, false)?; // Ready for data
 
     // Read 40 bits
@@ -40,14 +44,20 @@ fn read_dht(pin: usize) -> Result<(i8, u8), &'static str> {
             *byte <<= 1;
             wait_pin(pin, true)?;
             let dur = measure_pin(pin, false)?;
-            if dur > 40 { // 40µs threshold
+            if dur > 40 {
+                // 40µs threshold
                 *byte |= 1;
             }
         }
     }
 
     // Verify checksum
-    if data[4] == data[0].wrapping_add(data[1]).wrapping_add(data[2]).wrapping_add(data[3]) {
+    if data[4]
+        == data[0]
+            .wrapping_add(data[1])
+            .wrapping_add(data[2])
+            .wrapping_add(data[3])
+    {
         Ok((data[2] as i8, data[0]))
     } else {
         Err("Checksum error")
@@ -56,7 +66,8 @@ fn read_dht(pin: usize) -> Result<(i8, u8), &'static str> {
 
 // Helper functions for precise timing
 fn wait_pin(pin: usize, state: bool) -> Result<(), &'static str> {
-    for _ in 0..100 { // Timeout ~100µs
+    for _ in 0..100 {
+        // Timeout ~100µs
         if GPIO::read(pin) == state {
             return Ok(());
         }
@@ -70,7 +81,9 @@ fn measure_pin(pin: usize, state: bool) -> Result<u32, &'static str> {
     while GPIO::read(pin) == state {
         count += 1;
         delay::cycles(1);
-        if count > 100 { return Err("Timeout"); }
+        if count > 100 {
+            return Err("Timeout");
+        }
     }
     Ok(count)
 }

@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 extern crate panic_halt;
-use rusta::{println, ethernet, delay, net::ip::Ipv4Addr};
+use rusta::{delay, ethernet, net::ip::Ipv4Addr, println};
 
 #[no_mangle]
 fn _start() -> ! {

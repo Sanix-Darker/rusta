@@ -2,7 +2,7 @@
 #![no_std]
 #![no_main]
 extern crate panic_halt;
-use rusta::{i2c::I2C, delay, println};
+use rusta::{delay, i2c::I2C, println};
 
 #[no_mangle]
 fn _start() -> ! {

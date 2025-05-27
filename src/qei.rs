@@ -3,50 +3,59 @@ use crate::{board::GPIO_BASE, volatile::Volatile};
 #[repr(C)]
 struct QeiRegs {
     gpio: [Volatile<u32>; 54],
-    // ... other registers
+    gpfsel: [Volatile<u32>; 6],
+    gpset: [Volatile<u32>; 2],
+    gpclr: [Volatile<u32>; 2],
+    gplev: [Volatile<u32>; 2],
+    gpeds: [Volatile<u32>; 2],
+    gpren: [Volatile<u32>; 2],
+    gpfen: [Volatile<u32>; 2],
+    gphen: [Volatile<u32>; 2],
+    gplen: [Volatile<u32>; 2],
+    gparen: [Volatile<u32>; 2],
+    gpafen: [Volatile<u32>; 2],
+    gppud: Volatile<u32>,
+    gppudclk: [Volatile<u32>; 2],
+    qei_control: Volatile<u32>,
+    qei_status: Volatile<u32>,
+    qei_count: Volatile<u32>,
+    qei_max_count: Volatile<u32>,
+    qei_load: Volatile<u32>,
+    qei_debounce: Volatile<u32>,
 }
 
 pub struct QuadratureEncoder {
-    pin_a: usize,
-    pin_b: usize,
-    last_state: u8,
-    count: i32,
+    regs: &'static mut QeiRegs,
+    pins: (usize, usize),
 }
 
 impl QuadratureEncoder {
     pub fn new(pin_a: usize, pin_b: usize) -> Self {
-        unsafe {
-            let regs = &mut *(GPIO_BASE as *mut QeiRegs);
-            regs.gpio[pin_a].write(0); // Input mode
-            regs.gpio[pin_b].write(0); // Input mode
-        }
+        let regs = unsafe { &mut *(GPIO_BASE as *mut QeiRegs) };
 
-        Self {
-            pin_a,
-            pin_b,
-            last_state: 0,
-            count: 0,
-        }
-    }
+        // Configure pins as inputs
+        regs.gpfsel[pin_a / 10].update(|v| v & !(7 << ((pin_a % 10) * 3)));
+        regs.gpfsel[pin_b / 10].update(|v| v & !(7 << ((pin_b % 10) * 3)));
 
-    pub fn update(&mut self) {
-        let state = (GPIO::read(self.pin_a) as u8 | ((GPIO::read(self.pin_b) as u8) << 1;
-        let change = (self.last_state << 2) | state;
+        // Enable QEI hardware
+        regs.qei_control.write(
+            (1 << 31) | // Enable
+            (1 << 8) |  // Filter enable
+            (3 << 0)    // Count both edges
+        );
 
-        match change {
-            0b0001 | 0b0111 | 0b1110 | 0b1000 => self.count += 1,
-            0b0010 | 0b1011 | 0b1101 | 0b0100 => self.count -= 1,
-            _ => (),
-        }
-
-        self.last_state = state;
+        Self { regs, pins: (pin_a, pin_b) }
     }
 
     pub fn count(&self) -> i32 {
-        self.count
+        self.regs.qei_count.read() as i32
     }
 
-    pub fn rpm(&self, pulses_per_rev: u32, interval_ms: u32) -> f32 {
-        (self.count as f32 * 60_000.0) / (pulses_per_rev as f32 * interval_ms as f32)
+    pub fn reset(&mut self) {
+        self.regs.qei_load.write(0);
+    }
+
+    pub fn set_max_count(&mut self, max: u32) {
+        self.regs.qei_max_count.write(max);
     }
 }

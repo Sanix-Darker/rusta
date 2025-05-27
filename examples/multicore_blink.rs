@@ -1,7 +1,10 @@
 #![no_std]
 #![no_main]
 extern crate panic_halt;
-use rusta::{cpu, delay, gpio::{Mode, GPIO}};
+use rusta::{
+    cpu, delay,
+    gpio::{Mode, GPIO},
+};
 
 #[no_mangle]
 fn _start() -> ! {

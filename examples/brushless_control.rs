@@ -2,7 +2,7 @@
 #![no_std]
 #![no_main]
 extern crate panic_halt;
-use rusta::{pwm::PWM, qei::QuadratureEncoder, println};
+use rusta::{println, pwm::PWM, qei::QuadratureEncoder};
 
 #[no_mangle]
 fn _start() -> ! {
@@ -19,7 +19,7 @@ fn _start() -> ! {
         let duty = pid.update(rpm);
         PWM::set_duty(duty.clamp(0.05, 0.95)); // Safe limits
 
-        println!("RPM: {:.1}, Duty: {:.1}%", rpm, duty*100.0);
+        println!("RPM: {:.1}, Duty: {:.1}%", rpm, duty * 100.0);
         delay::cycles(1_000_000 / 20); // 20Hz update
     }
 }

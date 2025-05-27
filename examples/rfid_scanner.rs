@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 extern crate panic_halt;
-use rusta::{i2c::I2C, delay, println};
+use rusta::{delay, i2c::I2C, println};
 
 #[no_mangle]
 fn _start() -> ! {
@@ -27,7 +27,8 @@ fn scan_card(addr: u8) -> Option<[u8; 7]> {
     let mut buf = [0; 32];
     I2C::read(addr, &mut buf);
 
-    if buf[0] == 0x01 { // Valid card
+    if buf[0] == 0x01 {
+        // Valid card
         Some(buf[1..8].try_into().unwrap())
     } else {
         None

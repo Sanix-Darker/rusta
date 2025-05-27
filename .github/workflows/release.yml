@@ -38,7 +38,7 @@ jobs:
 
           # Package the library artifacts
           mkdir -p release-artifacts
-          cp target/${{ matrix.target }}/release/librusta.a release-artifacts/rusta-${{ matrix.feature }}.a
+          cp target/${{ matrix.target }}/release/librusta.d release-artifacts/rusta-${{ matrix.feature }}.a
           cp Cargo.toml release-artifacts/
           cp -r src release-artifacts/
 

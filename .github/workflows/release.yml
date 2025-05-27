@@ -34,10 +34,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Install Rust Targets
+        run: |
+          rustup target add aarch64-unknown-none
+          rustup target add x86_64-unknown-linux-gnu
+          rustup target add x86_64-pc-windows-gnu
+          rustup target add ${{ matrix.rust_target }}
+
       - name: Setup Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.rust_target }},aarch64-unknown-none
+          targets: aarch64-unknown-none,${{ matrix.rust_target }},x86_64-unknown-linux-gnu,x86_64-pc-windows-gnu
           components: rust-src, rustfmt, clippy
 
       - name: Build Library

@@ -1,0 +1,4 @@
+[toolchain]
+channel    = "nightly"
+components = ["rust-src"]          # unfortunatelly... build-std needs it
+targets    = ["aarch64-unknown-none"]

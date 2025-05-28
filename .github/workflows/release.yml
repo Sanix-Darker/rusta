@@ -56,17 +56,10 @@ jobs:
       #     mkdir -p docs/${{ matrix.feature }}
       #     cp -r target/doc/. docs/${{ matrix.feature }}
 
-      # FIXME: Lints / Verification
-      # - name: Run Verification
-      #   run: |
-      #     cargo +nightly check --features ${{ matrix.feature }} \
-      #         --target x86_64-unknown-linux-gnu \
-      #         -Z build-std=core,compiler_builtins,alloc \
-      #         -Z build-std-features=panic_immediate_abort
-      #     cargo +nightly clippy --features ${{ matrix.feature }} \
-      #         --target x86_64-unknown-linux-gnu \
-      #         -Z build-std=core,compiler_builtins,alloc \
-      #         -Z build-std-features=panic_immediate_abort
+      - name: Run Verification
+        run: |
+          cargo +nightly check --features ${{ matrix.feature }}
+          cargo +nightly clippy --features ${{ matrix.feature }}
 
       # Upload build artifacts
       - name: Upload Artifacts

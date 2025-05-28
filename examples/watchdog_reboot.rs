@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 extern crate panic_halt;
-use rusta::{println, watchdog::Watchdog, delay};
+use rusta::{delay, println, watchdog::Watchdog};
 
 #[no_mangle]
 fn _start() -> ! {

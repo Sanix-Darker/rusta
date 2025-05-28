@@ -6,5 +6,5 @@ pub const SPI0_BASE: usize = PERIPHERAL_BASE + 0x20_4000;
 pub const I2C1_BASE: usize = PERIPHERAL_BASE + 0x20_5000;
 pub const ADC_BASE: usize = PERIPHERAL_BASE + 0x21_0000;
 pub const TIMER_BASE: usize = PERIPHERAL_BASE + 0x00_B400;
-pub const PM_BASE:      usize = PERIPHERAL_BASE + 0x0010_0000;
+pub const PM_BASE: usize = PERIPHERAL_BASE + 0x0010_0000;
 pub const SYS_TIMER_BASE: usize = PERIPHERAL_BASE + 0x0000_3000;

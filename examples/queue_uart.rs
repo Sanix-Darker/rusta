@@ -3,7 +3,7 @@
 extern crate panic_halt;
 
 use heapless::spsc::Queue;
-use rusta::{uart::UART, delay};
+use rusta::{delay, uart::UART};
 
 static mut Q: Queue<u8, 64> = Queue::new();
 

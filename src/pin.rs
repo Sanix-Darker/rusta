@@ -1,6 +1,6 @@
 //! High-level Digital / Analog pin wrappers (Arduino-style).
 
-use crate::gpio::{GPIO, Mode};
+use crate::gpio::{Mode, GPIO};
 
 /// A compile-time digital pin.
 pub struct DigitalPin<const P: usize>;

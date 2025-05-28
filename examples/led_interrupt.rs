@@ -1,11 +1,7 @@
 // Button input with interrupt
 #![no_std]
 #![no_main]
-use rusta::{
-    hal::Peripherals,
-    interrupt,
-    println,
-};
+use rusta::{hal::Peripherals, interrupt, println};
 
 #[no_mangle]
 fn _start() -> ! {

@@ -26,7 +26,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 
 use crate::{
     delay,
-    gpio::{Edge, GPIO, Mode},
+    gpio::{Edge, Mode, GPIO},
     pwm::PWM,
 };
 
@@ -77,10 +77,14 @@ pub fn no_interrupts() {
 
 #[macro_export]
 macro_rules! pin_mode {
-    ($pin:expr, OUTPUT) => { $crate::gpio::GPIO::set_mode($pin, $crate::gpio::Mode::Output) };
-    ($pin:expr, INPUT) => { $crate::gpio::GPIO::set_mode($pin, $crate::gpio::Mode::Input) };
+    ($pin:expr, OUTPUT) => {
+        $crate::gpio::GPIO::set_mode($pin, $crate::gpio::Mode::Output)
+    };
+    ($pin:expr, INPUT) => {
+        $crate::gpio::GPIO::set_mode($pin, $crate::gpio::Mode::Input)
+    };
     ($pin:expr, INPUT_PULLUP) => {{
-        use $crate::gpio::{GPIO, Mode, Pull};
+        use $crate::gpio::{Mode, Pull, GPIO};
         GPIO::set_mode($pin, Mode::Input);
         GPIO::set_pull($pin, Pull::Up);
     }};
@@ -88,20 +92,28 @@ macro_rules! pin_mode {
 
 #[macro_export]
 macro_rules! digital_write {
-    ($pin:expr, HIGH) => { $crate::gpio::GPIO::write($pin, true) };
-    ($pin:expr, LOW)  => { $crate::gpio::GPIO::write($pin, false) };
+    ($pin:expr, HIGH) => {
+        $crate::gpio::GPIO::write($pin, true)
+    };
+    ($pin:expr, LOW) => {
+        $crate::gpio::GPIO::write($pin, false)
+    };
 }
 
 #[macro_export]
 macro_rules! digital_read {
-    ($pin:expr) => { $crate::gpio::GPIO::read($pin) };
+    ($pin:expr) => {
+        $crate::gpio::GPIO::read($pin)
+    };
 }
 
 /// 12-bit right-aligned ADC read.
 /// `analog_read!(0)` → `u16`.
 #[macro_export]
 macro_rules! analog_read {
-    ($ch:expr) => { $crate::pin::AnalogPin::<$ch>::read() };
+    ($ch:expr) => {
+        $crate::pin::AnalogPin::<$ch>::read()
+    };
 }
 
 /// “analogWrite” – duty 0-255 like Arduino.
@@ -234,7 +246,13 @@ pub extern "C" fn handle_gpio_isr(pin: usize) {
 #[macro_export]
 macro_rules! constrain {
     ($x:expr, $a:expr, $b:expr) => {
-        if $x < $a { $a } else if $x > $b { $b } else { $x }
+        if $x < $a {
+            $a
+        } else if $x > $b {
+            $b
+        } else {
+            $x
+        }
     };
 }
 
@@ -250,14 +268,22 @@ macro_rules! map {
 #[macro_export]
 macro_rules! min {
     ($a:expr, $b:expr) => {
-        if $a < $b { $a } else { $b }
+        if $a < $b {
+            $a
+        } else {
+            $b
+        }
     };
 }
 
 #[macro_export]
 macro_rules! max {
     ($a:expr, $b:expr) => {
-        if $a > $b { $a } else { $b }
+        if $a > $b {
+            $a
+        } else {
+            $b
+        }
     };
 }
 
@@ -293,23 +319,33 @@ pub fn random_range(min: u32, max: u32) -> u32 {
 
 #[macro_export]
 macro_rules! bit_set {
-    ($x:expr, $n:expr) => { $x |= 1 << $n };
+    ($x:expr, $n:expr) => {
+        $x |= 1 << $n
+    };
 }
 
 #[macro_export]
 macro_rules! bit_clear {
-    ($x:expr, $n:expr) => { $x &= !(1 << $n) };
+    ($x:expr, $n:expr) => {
+        $x &= !(1 << $n)
+    };
 }
 
 #[macro_export]
 macro_rules! bit_read {
-    ($x:expr, $n:expr) => { ($x >> $n) & 1 };
+    ($x:expr, $n:expr) => {
+        ($x >> $n) & 1
+    };
 }
 
 #[macro_export]
 macro_rules! bit_write {
     ($x:expr, $n:expr, $b:expr) => {
-        if $b != 0 { bit_set!($x, $n) } else { bit_clear!($x, $n) }
+        if $b != 0 {
+            bit_set!($x, $n)
+        } else {
+            bit_clear!($x, $n)
+        }
     };
 }
 

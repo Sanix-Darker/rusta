@@ -7,7 +7,8 @@ const SYS_TIMER_BASE: usize = crate::board::PERIPHERAL_BASE + 0x0000_3000;
 
 #[inline(always)]
 pub fn micros() -> u64 {
-    unsafe { core::ptr::read_volatile((SYS_TIMER_BASE + 0x04) as *const u32) as u64 } // lower 32-bit counter
+    unsafe { core::ptr::read_volatile((SYS_TIMER_BASE + 0x04) as *const u32) as u64 }
+    // lower 32-bit counter
 }
 
 /// Delay *n* micro-seconds (max ~71 min before wrap).

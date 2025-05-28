@@ -1,13 +1,22 @@
 # RUSTA
 
-**Unsafe** Rust runtime that boots bare-metal on Raspberry Pi 3 / 4 / 5...think *Arduino-style* simplicity, on a 64-bit quad-core.
+> YES !
+> With rusta, I SUCCEEDED BUILDING to pack a 72 bytes blink OS bootable on rpi.
+
+Meet rusta, an **Unsafe** Rust runtime that boots bare-metal on Raspberry Pi 3 / 4 / 5, as *Arduino-style* simplicity, on a 64-bit quad-core.
 
 [![Built with Rust](https://img.shields.io/badge/Built%20with-Rust-orange)](https://www.rust-lang.org)
 [![License MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
 Inspired by
-* Low-Level TV – <https://www.youtube.com/watch?v=jZT8APrzvc4>
-* The legendary <https://github.com/rust-embedded/rust-raspberrypi-OS-tutorials>
+* Low-Level TV : <https://www.youtube.com/watch?v=jZT8APrzvc4>
+* rust-embedded tutorial : <https://github.com/rust-embedded/rust-raspberrypi-OS-tutorials>
+* BCM2837 Datasheet : <https://cs140e.sergio.bz/docs/BCM2837-ARM-Peripherals.pdf>
+* rpi4 datasheet : <https://datasheets.raspberrypi.com/rpi4/raspberry-pi-4-datasheet.pdf>
+* rpi4 schematics : <https://datasheets.raspberrypi.com/rpi4/raspberry-pi-4-reduced-schematics.pdf>
+* rpi3 schematics :
+    - 3a <https://datasheets.raspberrypi.com/rpi3/raspberry-pi-3-a-schematics.pdf>
+    - 3b <https://datasheets.raspberrypi.com/rpi3/raspberry-pi-3-b-reduced-schematics.pdf>
 
 ## Why **RUSTA** instead of existing `rust-embedded` OSes?
 
@@ -107,21 +116,24 @@ Then build and generate the image with :
 
 ```bash
 $ make build
-cargo +nightly build  \
-    --release --target aarch64-unknown-none \
-    --example blink --features pi3
-    Finished `release` profile [optimized] target(s) in 0.02s
+Building example 'blink' for bare-metal target: aarch64-unknown-none with feature: pi3
+cargo +nightly build -Z build-std=core  \
+        --release --target aarch64-unknown-none \
+        --example blink --features pi3
+    Finished `release` profile [optimized] target(s) in 0.08s
 
 $ make image
-cargo +nightly build  \
-    --release --target aarch64-unknown-none \
-    --example blink --features pi3
-    Finished `release` profile [optimized] target(s) in 0.01s
+Building example 'blink' for bare-metal target: aarch64-unknown-none with feature: pi3
+cargo +nightly build -Z build-std=core  \
+        --release --target aarch64-unknown-none \
+        --example blink --features pi3
+    Finished `release` profile [optimized] target(s) in 0.05s
+Creating kernel8.img from bare-metal example...
 rust-objcopy -O binary target/aarch64-unknown-none/release/examples/blink kernel8.img
 
 $ ls -alh ./kernel8.img
 Permissions Size User Date Modified Name
-.rwxrwxr-x  4.4k dk   27 May 18:56  ./kernel8.img
+.rwxrwxr-x    72 dk   28 May 12:25  ./kernel8.img
 ```
 
 ## Toolchain Setup
